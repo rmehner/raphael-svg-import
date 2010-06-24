@@ -32,7 +32,7 @@ if (!String.prototype.scan) {
   }
 }
 
-Raphael.fn.importSVG = function (raw_svg) {
+Raphael.fn.importSVG = function (raw_svg,node_cb) {
   try {
     if (/^\s*$/m.test(raw_svg)) throw "No data was provided.";
     raw_svg = raw_svg.replace(/[\n\r\t]/g, ''); // convert newlines
@@ -97,6 +97,7 @@ Raphael.fn.importSVG = function (raw_svg) {
         }
         if (shape) {
           shape.attr(attr);
+          if (node_cb) { node_cb(shape) }
         }
       });
     }
