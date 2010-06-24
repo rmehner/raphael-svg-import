@@ -5,12 +5,6 @@
  * Licensed under the MIT (http://www.opensource.org/licenses/mit-license.php) license.
  */
 
-if (!String.prototype.blank) {
-  // from prototype.js
-  String.prototype.blank = function() {
-    return /^\s*$/.test(this);
-  }
-}
 if (!String.prototype.scan) {
   String.prototype.scan = function(pattern, iterator) {
     var offset = 0;
@@ -64,7 +58,7 @@ if (!Function.prototype.bind) {
 
 Raphael.fn.importSVG = function (raw_svg) {
   try {
-    if (raw_svg.blank()) throw "No data was provided.";
+    if (/^\s*$/m.test(raw_svg)) throw "No data was provided.";
     raw_svg = raw_svg.replace(/[\n\r\t]/g, ''); // convert newlines
 
     if (!raw_svg.match(/<svg(.*?)>(.*)<\/svg>/gi)) throw "The data you entered doesn't contain SVG.";
@@ -117,7 +111,6 @@ Raphael.fn.importSVG = function (raw_svg) {
             shape = this.image();
             break;
           default:
-            console.log("unsupported: " + node);
             shape = {attr:function(){}}
             break;
           //-F case "text":
