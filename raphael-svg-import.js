@@ -32,30 +32,6 @@ if (!String.prototype.scan) {
   }
 }
 
-if (!Function.prototype.bind) {
-  // from prototype.js
-  var slice = Array.prototype.slice;
-  function update(array, args) {
-    var arrayLength = array.length, length = args.length;
-    while (length--) array[arrayLength + length] = args[length];
-    return array;
-  }
-
-  function merge(array, args) {
-    array = slice.call(array, 0);
-    return update(array, args);
-  }
-
-  Function.prototype.bind = function(context) {
-    if (arguments.length < 2 && arguments[0] == undefined) return this;
-    var __method = this, args = slice.call(arguments, 1);
-    return function() {
-      var a = merge(args, arguments);
-      return __method.apply(context, a);
-    }
-  }
-}
-
 Raphael.fn.importSVG = function (raw_svg) {
   try {
     if (/^\s*$/m.test(raw_svg)) throw "No data was provided.";
@@ -64,14 +40,15 @@ Raphael.fn.importSVG = function (raw_svg) {
     if (!raw_svg.match(/<svg(.*?)>(.*)<\/svg>/gi)) throw "The data you entered doesn't contain SVG.";
 
     var supported = ["rect", "polyline", "circle", "ellipse", "path", "polygon", "image", "text"];
+    var self = this;
     for (var i = 0, len = supported.length; i < len; ++i) {
       var node = supported[i];
 
-      raw_svg.scan(new RegExp("<" + node + "(.*?)\/>","igm"), (function(match) {
+      raw_svg.scan(new RegExp("<" + node + "(.*?)\/>","igm"), function(match) {
         var attr = { "stroke-width": 0, "fill":"#fff" };
         var shape = null;
         if (match && typeof(match) == 'object' && match[1]) {
-          var style;
+          var style = null;
           match[1].scan(/([a-z\-]+)="(.*?)"/, function(m) {
             switch(m[1]) {
             case "stroke-dasharray":
@@ -85,6 +62,7 @@ Raphael.fn.importSVG = function (raw_svg) {
               break;
             }
           });
+
           if (style) {
             style.scan(/([a-z\-]+) ?: ?([^ ;]+)[ ;]?/, function(m) {
               attr[m[1]] = m[2];
@@ -93,40 +71,42 @@ Raphael.fn.importSVG = function (raw_svg) {
         }
         switch(node) {
           case "rect":
-            shape = this.rect();
+            shape = self.rect();
             break;
           case "circle":
-            shape = this.circle();
+            shape = self.circle();
             break;
           case "ellipse":
-            shape = this.ellipse();
+            shape = self.ellipse();
             break;
           case "path":
-            shape = this.path(attr["d"]);
+            shape = self.path(attr["d"]);
             break;
           case "polygon":
-            shape = this.polygon(attr["points"]);
+            shape = self.polygon(attr["points"]);
+            break;
+          case "polyline":
+            shape = self.polyline(attr["points"]);
             break;
           case "image":
-            shape = this.image();
-            break;
-          default:
-            shape = {attr:function(){}}
+            shape = self.image();
             break;
           //-F case "text":
           //-F   shape = this.text();
           //-F break;
         }
-        shape.attr(attr);
-      }).bind(this));
+        if (shape) {
+          shape.attr(attr);
+        }
+      });
     }
   } catch (error) {
     console.error(error);
   }
 };
 
-// extending raphael with a polygon function
-Raphael.fn.polygon = function(point_string) {
+// Extending raphael with a polygon function
+Raphael.fn.polygon = function(point_string,noclose) {
   var poly_array = ["M"];
   if (!point_string) { return this.path(); }
   var points = point_string.split(' ');
@@ -137,11 +117,16 @@ Raphael.fn.polygon = function(point_string) {
     }
     if (i == 0) poly_array.push("L");
   }
-  poly_array.push("Z");
+  if (!noclose) { poly_array.push("Z"); }
   var n = []; // remove null's
   for (var i = 0, len = poly_array.length; i < len; ++i) {
     var a = poly_array[i];
     if (a || a == 0) { n.push(a); }
   }
   return this.path(n);
+};
+
+// Extending raphael with a polyline function
+Raphael.fn.polyline = function(point_string) {
+  return this.polygon(point_string,true);
 };
