@@ -17,11 +17,9 @@ Nothing fancy but it gives you a starting point.
 
 ### Dependencies
 - [Raphael JS](http://raphaeljs.com/)
-- [Prototype JS](http://prototypejs.org/)
 
 ### Important
 - This plugin is still under development
-- It requires the Prototype JS library
 
 ### To-do
 - SVG group to Raphael set conversion
