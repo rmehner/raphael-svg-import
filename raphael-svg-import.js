@@ -39,7 +39,7 @@ Raphael.fn.importSVG = function (raw_svg,node_cb) {
 
     if (!raw_svg.match(/<svg(.*?)>(.*)<\/svg>/gi)) throw "The data you entered doesn't contain SVG.";
 
-    var supported = ["rect", "polyline", "circle", "ellipse", "path", "polygon", "image", "text"];
+    var supported = ["rect", "polyline", "circle", "ellipse", "path", "polygon", "image", "text", "line"];
     var self = this;
     for (var i = 0, len = supported.length; i < len; ++i) {
       var node = supported[i];
@@ -49,7 +49,7 @@ Raphael.fn.importSVG = function (raw_svg,node_cb) {
         var shape = null;
         if (match && typeof(match) == 'object' && match[1]) {
           var style = null;
-          match[1].scan(/([a-z\-]+)="(.*?)"/, function(m) {
+          match[1].scan(/([a-z1-2\-]+)="(.*?)"/, function(m) {
             switch(m[1]) {
             case "stroke-dasharray":
               attr[m[1]] = "- ";
@@ -90,6 +90,9 @@ Raphael.fn.importSVG = function (raw_svg,node_cb) {
             break;
           case "image":
             shape = self.image();
+            break;
+          case "line":
+            shape = self.path('M' + attr['x1'] + ' ' + attr['y1'] + 'L' + attr['x2'] + ' ' + attr['y2']);
             break;
           //-F case "text":
           //-F   shape = this.text();
